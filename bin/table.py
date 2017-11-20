@@ -3,10 +3,13 @@ from random import randint
 from gff3 import Gff3Parser
 from bokeh.io import output_file, save
 from bokeh.layouts import widgetbox, column, row, layout
-from bokeh.models import ColumnDataSource, DataRange1d, Plot, LinearAxis, Grid, Circle, HoverTool, BoxSelectTool, LabelSet, Label
+from bokeh.models import (ColumnDataSource, DataRange1d, Plot, LinearAxis,
+                          Grid, Circle, HoverTool, BoxSelectTool, LabelSet,
+                          Label)
 from bokeh.models.widgets import (DataTable, TableColumn, DateFormatter,
-                                  StringFormatter, NumberFormatter, HTMLTemplateFormatter,
-                                  StringEditor, IntEditor, NumberEditor, SelectEditor)
+                                  StringFormatter, NumberFormatter,
+                                  HTMLTemplateFormatter, StringEditor,
+                                  IntEditor, NumberEditor, SelectEditor)
 from bokeh.sampledata.periodic_table import elements
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
@@ -42,7 +45,8 @@ def check_tss(entry, gffs, type_, data, feature):
     for tss_ps in gffs:
         if feature == "CDS":
             if "associated_gene" in tss_ps.attributes.keys():
-                if entry.attributes["locus_tag"] in tss_ps.attributes["associated_gene"]:
+                if (entry.attributes["locus_tag"] in 
+                    tss_ps.attributes["associated_gene"]):
                     detect = True
                     tss_list.append("-".join([str(tss_ps.start),
                                               str(tss_ps.end)]))
@@ -168,8 +172,10 @@ def get_cds_info(cdss, gffs, data, quants, names):
         for gene in gffs["gene"]:
             if gene.attributes["ID"] in cds.attributes["Parent"].split(","):
                 if "db_xref" in gene.attributes.keys():
-                    link = "https://www.ncbi.nlm.nih.gov/gene/" + gene.attributes["db_xref"].split(":")[-1]
-                    hyper = '<a href= ' + link + ' target="_blank"> ' + gene.attributes["db_xref"] + '</a>'
+                    link = ("https://www.ncbi.nlm.nih.gov/gene/" +
+                            gene.attributes["db_xref"].split(":")[-1])
+                    hyper = ('<a href= ' + link + ' target="_blank"> ' +
+                             gene.attributes["db_xref"] + '</a>')
                     data["link"].append(hyper)
                 else:
                     data["link"].append(gene.attributes["product"])
@@ -187,8 +193,10 @@ def get_rfam_info(rfams, gffs, data, quants, feature):
     for rfam in rfams:
         import_basic(data, rfam, feature)
         if "rfam_id" in rfam.attributes.keys():
-            link = "http://rfam.xfam.org/family/" + rfam.attributes["rfam_id"].split(":")[-1]
-            hyper = '<a href= ' + link + ' target="_blank"> ' + rfam.attributes["rfam_id"] + '</a>'
+            link = ("http://rfam.xfam.org/family/" +
+                    rfam.attributes["rfam_id"].split(":")[-1])
+            hyper = ('<a href= ' + link + ' target="_blank"> ' +
+                     rfam.attributes["rfam_id"] + '</a>')
             data["link"].append(hyper)
         else:
             data["link"].append(rfam.attributes["Name"])
@@ -208,8 +216,10 @@ def get_rna_info(rnas, gffs, data, quants, feature):
         else:
             data["gene_name"].append(rna.attributes["product"])
         if "db_xref" in rna.attributes.keys():
-            link = "https://www.ncbi.nlm.nih.gov/gene/" + rna.attributes["db_xref"].split(":")[-1]
-            hyper = '<a href= ' + link + ' target="_blank"> ' + rna.attributes["db_xref"] + '</a>'
+            link = ("https://www.ncbi.nlm.nih.gov/gene/" +
+                    rna.attributes["db_xref"].split(":")[-1])
+            hyper = ('<a href= ' + link + ' target="_blank"> ' +
+                     rna.attributes["db_xref"] + '</a>')
             data["link"].append(hyper)
         else:
             data["link"].append(rna.attributes["product"])
@@ -223,7 +233,9 @@ def get_crispr_info(crisprs, gffs, data, quants):
     for crispr in crisprs:
         import_basic(data, crispr, "CRISPR")
         data["gene_name"].append("-")
-        data["link"].append('<a href= http://crispr.i2bc.paris-saclay.fr/crispr/crispr_db.php?checked%5B%5D=NC_007795 target="_blank">CRIPSRdb</a>')
+        data["link"].append('<a href= http://crispr.i2bc.paris-saclay.fr/'
+                            'crispr/crispr_db.php?checked%5B%5D=NC_007795 '
+                            'target="_blank">CRIPSRdb</a>')
         check_tran(crispr, gffs["transcript"], data)
         check_tss(crispr, gffs["TSS"], "tss", data, "CRISPR")
         check_ps(crispr, gffs["processing_site"], "ps", data)
@@ -237,8 +249,10 @@ def get_srna_info(srnas, gffs, data, quants):
             data["gene_name"].append(srna.attributes["Name"])
         else:
             data["gene_name"].append("-")
-        filename = "_".join([srna.feature, str(srna.start), str(srna.end), srna.strand]) + ".html"
-        data["link"].append('<a href=' + filename + ' target="_blank">Co-epxression analysis</a>')
+        filename = "_".join([srna.feature, str(srna.start),
+                             str(srna.end), srna.strand]) + ".html"
+        data["link"].append('<a href=' + filename +
+                            ' target="_blank">Co-epxression analysis</a>')
         check_tran(srna, gffs["transcript"], data)
         check_tss(srna, gffs["TSS"], "tss", data, "ncRNA")
         check_ps(srna, gffs["processing_site"], "ps", data)
@@ -258,7 +272,10 @@ def get_sorf_info(sorfs, gffs, data, quants):
 
 def gen_column():
     columns = [
-            TableColumn(field="features", title="Features", width=300, formatter=HTMLTemplateFormatter(template='<a href=<%= value %>.html target="_blank"><%= value %></a>')),
+            TableColumn(
+                field="features", title="Features", width=300,
+                formatter=HTMLTemplateFormatter(
+                template='<a href=<%= value %>.html target="_blank"><%= value %></a>')),
             TableColumn(field="start", title="Begin", width=150),
             TableColumn(field="end", title="End", width=150),
             TableColumn(field="strand", title="Strand", width=100),
@@ -267,7 +284,9 @@ def gen_column():
             TableColumn(field="tss", title="Associated TSSs", width=1000),
             TableColumn(field="ps", title="Associated processing sites", width=800),
             TableColumn(field="term", title="Associated terminators", width=420),
-            TableColumn(field="link", title="Functional reference", width=460, formatter=HTMLTemplateFormatter(template='<%= value %>')),
+            TableColumn(
+                field="link", title="Functional reference", width=460,
+                formatter=HTMLTemplateFormatter(template='<%= value %>')),
             TableColumn(field="TSB_OD_0.2", title="RPKM:TSB_OD_0.2"),
             TableColumn(field="TSB_OD_0.2_TEX", title="RPKM:TSB_OD_0.2_TEX"),
             TableColumn(field="TSB_OD_0.5", title="RPKM:TSB_OD_0.5"),
@@ -336,10 +355,12 @@ def main():
         if (feature == args.features) or (args.features == "all"):
             if feature == "riboswitch":
                 gen_html("riboswitch.html")
-                get_rfam_info(gffs["riboswitch"], gffs, data, quants, "riboswitch")
+                get_rfam_info(gffs["riboswitch"], gffs, data, quants,
+                              "riboswitch")
             elif feature == "RNA_thermometer":
                 gen_html("RNA_thermometer.html")
-                get_rfam_info(gffs["RNA_thermometer"], gffs, data, quants, "RNA_thermometer")
+                get_rfam_info(gffs["RNA_thermometer"], gffs, data,
+                              quants, "RNA_thermometer")
             elif feature == "CRISPR":
                 gen_html("CRISPR.html")
                 get_crispr_info(gffs["CRISPR"], gffs, data, quants)
@@ -362,7 +383,6 @@ def main():
     columns = gen_column()
     data_table = DataTable(source=source, columns=columns, height=3000, width=6000)
     save(widgetbox(data_table))
-
     
 if __name__ == "__main__":
     main()

@@ -17,10 +17,13 @@ from scipy.spatial import distance
 from bokeh.resources import INLINE
 from bokeh.io import output_file, save, hplot
 from bokeh.layouts import widgetbox, column, row, layout, gridplot
-from bokeh.models import Line, Label, FuncTickFormatter, ColumnDataSource, DataRange1d, Plot, LinearAxis, Grid, Circle, HoverTool, BoxSelectTool
+from bokeh.models import (Line, Label, FuncTickFormatter, ColumnDataSource,
+                          DataRange1d, Plot, LinearAxis, Grid, Circle,
+                          HoverTool, BoxSelectTool)
 from bokeh.models.widgets import (DataTable, TableColumn, DateFormatter,
-                                  StringFormatter, NumberFormatter, HTMLTemplateFormatter,
-                                  StringEditor, IntEditor, NumberEditor, SelectEditor)
+                                  StringFormatter, NumberFormatter,
+                                  HTMLTemplateFormatter, StringEditor,
+                                  IntEditor, NumberEditor, SelectEditor)
 from bokeh.sampledata.periodic_table import elements
 from bokeh.plotting import figure
 from bokeh.models.tickers import FixedTicker
@@ -34,15 +37,23 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i","--gene_quanti_file",help="gene quantification file")
 parser.add_argument("-g","--gff_file", default=None, help="gene gff file")
 parser.add_argument("-n","--name_file", default=None, help="gene name file")
-parser.add_argument("-p","--position", help="gene position and strand (ex. 121434:122441:+)")
-parser.add_argument("-pc","--pos_cut", type=float, default=0.77, help="the cutoff of positive correlation, default is 0.8")
-parser.add_argument("-nc","--neg_cut", type=float, default=-0.77, help="the cutoff of negative correlation, default is -0.8")
-parser.add_argument("-k","--known_srna_only", action="store_true", help="only analyze known sRNA")
-parser.add_argument("-kc","--known_srna_color", default="silver", help="the color for known sRNA")
-parser.add_argument("-dc","--novel_srna_color", default="silver", help="the color for novel sRNA")
-parser.add_argument("-cc","--cds_color", default="silver", help="the color for CDS")
+parser.add_argument("-p","--position",
+                    help="gene position and strand (ex. 121434:122441:+)")
+parser.add_argument("-pc","--pos_cut", type=float, default=0.77,
+                    help="the cutoff of positive correlation, default is 0.8")
+parser.add_argument("-nc","--neg_cut", type=float, default=-0.77,
+                    help="the cutoff of negative correlation, default is -0.8")
+parser.add_argument("-k","--known_srna_only", action="store_true",
+                    help="only analyze known sRNA")
+parser.add_argument("-kc","--known_srna_color", default="silver",
+                    help="the color for known sRNA")
+parser.add_argument("-dc","--novel_srna_color", default="silver",
+                    help="the color for novel sRNA")
+parser.add_argument("-cc","--cds_color", default="silver",
+                    help="the color for CDS")
 parser.add_argument("-go","--go_file", help="association go file")
-parser.add_argument("-gp","--goatools_path", help="path of find_enrichment.py in goatools")
+parser.add_argument("-gp","--goatools_path",
+                    help="path of find_enrichment.py in goatools")
 parser.add_argument("-gb","--obo_file", help="path fo go.obo")
 parser.add_argument("-po","--population_file", help="Go population file")
 parser.add_argument("-ga","--go_association", help="Go association file")
@@ -103,8 +114,10 @@ def get_gene_name(genes, info, names):
                 break
         for gene in genes:
             if gene.attributes["ID"] in parent.split(","):
-                link = "https://www.ncbi.nlm.nih.gov/gene/" + gene.attributes["db_xref"].split(":")[-1]
-                hyper = '<a href= ' + link + ' target="_blank"> ' + gene.attributes["db_xref"] + '</a>'
+                link = ("https://www.ncbi.nlm.nih.gov/gene/" +
+                        gene.attributes["db_xref"].split(":")[-1])
+                hyper = ('<a href= ' + link + ' target="_blank"> ' +
+                         gene.attributes["db_xref"] + '</a>')
         return hyper, gene_name
     else:
         gene_name = "novel"
@@ -112,7 +125,8 @@ def get_gene_name(genes, info, names):
             if data.startswith("Name") and ("sRNA_0" not in data):
                 gene_name = data.split("=")[-1]
         filename = "_".join(info.split("_")[0:4]) + ".html"
-        hyper = '<a href=' + filename + ' target="_blank">Co-epxression analysis</a>'
+        hyper = ('<a href=' + filename +
+                 ' target="_blank">Co-epxression analysis</a>')
         return hyper, gene_name
 
 def gen_input_goatools(filename, infos, exps, cutoff, q_info, q_exp, gos):
@@ -139,7 +153,8 @@ def gen_input_goatools(filename, infos, exps, cutoff, q_info, q_exp, gos):
                         pro_gos.append("NA")
                     datas.append(exps[index])
                     ids.append(info)
-                    ccs.append("{0:.5f}".format(float(spearmanr(exps[index], q_exp[index_q])[0])))
+                    ccs.append("{0:.5f}".format(float(spearmanr(
+                        exps[index], q_exp[index_q])[0])))
             elif "negative" in filename:
                 if (float(spearmanr(exps[index], q_exp[index_q])[0]) <= cutoff):
                     detect = False
@@ -154,7 +169,8 @@ def gen_input_goatools(filename, infos, exps, cutoff, q_info, q_exp, gos):
                         pro_gos.append("NA")
                     datas.append(exps[index])
                     ids.append(info)
-                    ccs.append("{0:.5f}".format(float(spearmanr(exps[index], q_exp[index_q])[0])))
+                    ccs.append("{0:.5f}".format(float(spearmanr(
+                        exps[index], q_exp[index_q])[0])))
     out.close()
     out_go = open(filename + "_go", "w")
     call(["python3", args.goatools_path, "--pval=0.05", "--indent",
@@ -189,9 +205,11 @@ def import_basic(items, type_, go, cc, gene_name, link, exps, members):
         if info == "_".join(items[:4]):
             get_quant(exp, members)
 
-def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, gos, members, fig_title):
-    tags = ["TSB_OD_0.2", "TSB_OD_0.5", "TSB_OD_1", "TSB_t0", "TSB_t1", "TSB_t2", "TSB_ON",
-            "pMEM_OD_0.2", "pMEM_OD_0.5", "pMEM_OD_1", "pMEM_t0", "pMEM_t1", "pMEM_t2", "pMEM_ON"]
+def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff,
+         genes, gos, members, fig_title):
+    tags = ["TSB_OD_0.2", "TSB_OD_0.5", "TSB_OD_1", "TSB_t0", "TSB_t1",
+            "TSB_t2", "TSB_ON", "pMEM_OD_0.2", "pMEM_OD_0.5", "pMEM_OD_1",
+            "pMEM_t0", "pMEM_t1", "pMEM_t2", "pMEM_ON"]
     datas, ids, pro_gos, enrichs, ccs = gen_input_goatools(
          filename, infos, exps, cutoff, q_info, q_exp, gos)
     f_datas = []
@@ -200,7 +218,8 @@ def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, go
     q_items = q_info.split("_")
     link, gene_name = get_gene_name(genes, q_info, names)
     if "positive" in filename:
-        import_basic(q_items, "Query sRNA", "-", "-", gene_name, link, q_exp, members)
+        import_basic(q_items, "Query sRNA", "-", "-", gene_name,
+                     link, q_exp, members)
     for info, exp, go_list, cc in zip(ids, datas, pro_gos, ccs):
         link, gene_name = get_gene_name(genes, info, names)
         items = info.split("_")
@@ -211,11 +230,11 @@ def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, go
                     f_ids.append(info)
                     f_ccs.append(cc)
                     if "positive" in filename:
-                        import_basic(items, "correlated", "\n".join(go_list), cc,
-                                     gene_name, link, exps, members)
+                        import_basic(items, "correlated", "\n".join(go_list),
+                                     cc, gene_name, link, exps, members)
                     else:
-                        import_basic(items, "anti-correlated", "\n".join(go_list), cc,
-                                     gene_name, link, exps, members)
+                        import_basic(items, "anti-correlated", "\n".join(go_list),
+                                     cc, gene_name, link, exps, members)
                     break
         else:
             f_datas.append(exp)
@@ -241,8 +260,8 @@ def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, go
     p = figure(title=fig_title, plot_width=850, plot_height=850,
                tools=["pan,wheel_zoom,box_zoom,reset,tap", hover]) ## tap for select line and highlight it
     for exp, id_, cc in zip(f_datas, f_ids, f_ccs):
-        print(cc)
-        sources = {"feature": [], "start": [], "end": [], "strand": [], "exp": [], "cc": []}
+        sources = {"feature": [], "start": [], "end": [],
+                   "strand": [], "exp": [], "cc": []}
         for e_v in exp:
             infos = id_.split("_")
             sources["feature"].append(infos[0])
@@ -255,7 +274,8 @@ def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, go
         l.selection_glyph = Line(line_color="blue", line_width=3)
         l.nonselection_glyph = Line(line_color="blue", line_width=2)
     for info, exp in q_exp.items():
-        sources = {"feature": [], "start": [], "end": [], "strand": [], "exp": [], "cc": []}
+        sources = {"feature": [], "start": [], "end": [],
+                   "strand": [], "exp": [], "cc": []}
         for e_v in exp:
             infos = info.split("_")
             sources["feature"].append("ncRNA")
@@ -264,14 +284,10 @@ def plot(filename, q_info, q_exp, names, pngname, infos, exps, cutoff, genes, go
             sources["strand"].append(infos[3])
             sources["exp"].append(e_v)
             sources["cc"].append("Query sRNA")
-        l = p.line(x, exp, legend="Query sRNA", line_color="red", line_width=2, source=sources)
+        l = p.line(x, exp, legend="Query sRNA", line_color="red",
+                   line_width=2, source=sources)
         l.selection_glyph = Line(line_color="red", line_width=3)
         l.nonselection_glyph = Line(line_color="red", line_width=2)
-#        for key, value in sources.items():
-#            print(key)
-#            print(len(value))
-#    print(len(x))
-#    print(len(exp))
     p.xaxis.axis_label = "Conditions"
     p.yaxis.axis_label = "Log2 fold changes"
     p.xaxis.ticker = FixedTicker(ticks=x) ## set the number of ticks
@@ -300,7 +316,8 @@ def gen_table(members):
             TableColumn(field="end", title="End", width=120),
             TableColumn(field="strand", title="Strand", width=80),
             TableColumn(field="gene_name", title="Gene name", width=140),
-            TableColumn(field="link", title="Reference link", formatter=HTMLTemplateFormatter(template='<%= value %>')),
+            TableColumn(field="link", title="Reference link",
+                        formatter=HTMLTemplateFormatter(template='<%= value %>')),
             TableColumn(field="cc", title="C.C"),
             TableColumn(field="GO", title="GO term"),
             TableColumn(field="TSB_OD_0.2", title="Log2 fold change:TSB_OD_0.2"),
@@ -318,7 +335,8 @@ def gen_table(members):
             TableColumn(field="pMEM_t2", title="Log2 fold_change:pMEM_t2"),
             TableColumn(field="pMEM_ON", title="Log2 fold_change:pMEM_ON"),
         ]
-    data_table = DataTable(source=source, columns=columns, editable=True, height=4000, width=5000)
+    data_table = DataTable(source=source, columns=columns, editable=True,
+                           height=4000, width=5000)
     return data_table
 
 def main():
@@ -334,12 +352,12 @@ def main():
     genes = []
     names = {}
     srnas = []
-    members = {"role": [], "feature": [], "start": [], "end": [], "strand": [], "link": [],
-               "gene_name": [], "GO": [], "cc": [], "pMEM_OD_0.2": [], "pMEM_OD_0.5": [],
-               "pMEM_OD_1": [], "pMEM_t0": [], "pMEM_t1": [], "pMEM_t2": [],
-               "pMEM_ON": [], "TSB_OD_0.2": [], "TSB_OD_0.5": [],
-               "TSB_OD_1": [], "TSB_t0": [], "TSB_t1": [], "TSB_t2": [],
-               "TSB_ON": []}
+    members = {"role": [], "feature": [], "start": [], "end": [], "strand": [],
+               "link": [], "gene_name": [], "GO": [], "cc": [],
+               "pMEM_OD_0.2": [], "pMEM_OD_0.5": [], "pMEM_OD_1": [],
+               "pMEM_t0": [], "pMEM_t1": [], "pMEM_t2": [], "pMEM_ON": [],
+               "TSB_OD_0.2": [], "TSB_OD_0.5": [], "TSB_OD_1": [], "TSB_t0": [],
+               "TSB_t1": [], "TSB_t2": [], "TSB_ON": []}
     nh = open(args.name_file, "r")
     for row in csv.reader(nh, delimiter='\t'):
         names[row[0]] = row[3]
@@ -355,26 +373,30 @@ def main():
                    (args.known_srna_only) and ("Name=sRNA" not in row[9])):
                 exps["_".join([row[3], row[4], row[5], row[7]])] = [
                              float(row[10]), float(row[11]), float(row[12]),
-                             float(row[13]), float(row[14]), float(row[15]), float(row[16]),
-                             float(row[17]), float(row[18]), float(row[19]),
-                             float(row[20]), float(row[21]), float(row[22]), float(row[23])]
+                             float(row[13]), float(row[14]), float(row[15]),
+                             float(row[16]), float(row[17]), float(row[18]),
+                             float(row[19]), float(row[20]), float(row[21]),
+                             float(row[22]), float(row[23])]
             infos.append("_".join([row[3], row[4], row[5], row[7], row[9]]))
-            if (row[4] == str(start)) and (row[5] == str(end)) and (row[7] == str(strand)):
+            if (row[4] == str(start)) and (row[5] == str(end)) and (
+                    row[7] == str(strand)):
                 q_exp = {"_".join([row[3], row[4], row[5], row[7]]): [
                          float(row[10]), float(row[11]), float(row[12]),
-                         float(row[13]), float(row[14]), float(row[15]), float(row[16]),
-                         float(row[17]), float(row[18]), float(row[19]),
-                         float(row[20]), float(row[21]), float(row[22]), float(row[23])]}
+                         float(row[13]), float(row[14]), float(row[15]),
+                         float(row[16]), float(row[17]), float(row[18]),
+                         float(row[19]), float(row[20]), float(row[21]),
+                         float(row[22]), float(row[23])]}
                 q_info = "_".join([row[3], row[4], row[5], row[7], row[9]])
     name = get_filename(q_info)
     if "/" in name:
-        name = "_".join([name.replace("/", "_or_"), str(start), str(end), str(strand)])
+        name = "_".join([name.replace("/", "_or_"), str(start),
+                         str(end), str(strand)])
     else:
         name = "_".join([name, str(start), str(end), str(strand)])
-    p1 = plot(name + "_positive", q_info, q_exp, names,
-             name + "_positive.png", infos, exps, args.pos_cut, genes, gos, members, "Correlation")
-    p2 = plot(name + "_negative", q_info, q_exp, names,
-             name + "_negative.png", infos, exps, args.neg_cut, genes, gos, members, "Anti-correlation")
+    p1 = plot(name + "_positive", q_info, q_exp, names, name + "_positive.png",
+              infos, exps, args.pos_cut, genes, gos, members, "Correlation")
+    p2 = plot(name + "_negative", q_info, q_exp, names, name + "_negative.png",
+              infos, exps, args.neg_cut, genes, gos, members, "Anti-correlation")
     grid = gridplot([p1, p2], ncols=2)
     table = gen_table(members)
     l = layout([[grid], [widgetbox(table)]])
