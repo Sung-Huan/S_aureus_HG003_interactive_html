@@ -1,6 +1,6 @@
 main(){
 #    correlation_one
-    correlation_all
+#    correlation_all
 #    network
 #    gen_index
 }
@@ -19,8 +19,6 @@ correlation_one(){
                                -s Staphylococcus_aureus_HG003 \
                                -i input/gene_wise_quantifications_combined_deseq2_final_poly_u.csv > test1
 #     mv *.html html
-#    mv *_positive* query
-#    mv *_negative* query
 }
 
 correlation_all(){
